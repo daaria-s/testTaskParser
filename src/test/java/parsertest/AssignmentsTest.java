@@ -13,24 +13,33 @@ import java.io.FileNotFoundException;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
-public class AssignmentsParserTest {
+public class AssignmentsTest {
 
 
-    String filesDirectory = "src/test/files/";
+    String filesDirectory = "src/test/files/assignments/";
 
     @Test
     public void assignmentsTest1() throws FileNotFoundException, ParseException {
+        // parser test
         Program expectedProgram = new Program();
         expectedProgram.setStatementList(List.of(new AssignStatement("a", new ConstantExpression(1))));
         Program actualProgram = Parser.parse(filesDirectory + "assignment1.txt");
 
         assertEquals(expectedProgram.getStatements(), actualProgram.getStatements());
+
+        // executor test
+        expectedProgram.execute();
+        actualProgram.execute();
+        assertEquals(expectedProgram.getVariables(), actualProgram.getVariables());
+
     }
 
 
     @Test
     public void assignmentsTest2() throws FileNotFoundException, ParseException {
+        // parser test
         Program expectedProgram = new Program();
         expectedProgram.setStatementList(List.of(new AssignStatement("x", new ConstantExpression(1)),
                 new AssignStatement("y", new ConstantExpression(2)),
@@ -39,11 +48,18 @@ public class AssignmentsParserTest {
         Program actualProgram = Parser.parse(filesDirectory + "assignment2.txt");
 
         assertEquals(expectedProgram.getStatements(), actualProgram.getStatements());
+
+        // executor test
+        expectedProgram.execute();
+        actualProgram.execute();
+        assertEquals(expectedProgram.getVariables(), actualProgram.getVariables());
+
     }
 
 
     @Test
     public void assignmentsTest3() throws FileNotFoundException, ParseException {
+        // parser test
         Program expectedProgram = new Program();
         expectedProgram.setStatementList(List.of(new AssignStatement("a", new ConstantExpression(1)),
                 new AssignStatement("b", new ConstantExpression(3)),
@@ -53,5 +69,9 @@ public class AssignmentsParserTest {
         Program actualProgram = Parser.parse(filesDirectory + "assignment3.txt");
 
         assertEquals(expectedProgram.getStatements(), actualProgram.getStatements());
+
+        // executor test
+        assertThrows(NullPointerException.class, actualProgram::execute);
+
     }
 }

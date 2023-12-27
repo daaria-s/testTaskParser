@@ -3,12 +3,12 @@ package parser.syntaxtree.expressions;
 import java.util.HashSet;
 import java.util.Map;
 
-public interface Expression {
-    int calculate(Map<String, Integer> variables);
+public abstract class Expression {
+    abstract int calculate(Map<String, Integer> variables);
 
-     String info();
+     abstract String info();
 
-     HashSet<String> getUsedVariables();
+     abstract HashSet<String> getUsedVariables();
 
 
 }

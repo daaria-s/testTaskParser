@@ -36,7 +36,6 @@ public class Program {
         System.out.println("Executed successfully, " + statements.size() + " statements");
 
         System.out.println("Variable values at the end of the program:");
-
         for (var variable : variables.entrySet()) {
             System.out.println(variable.getKey() + " = " + variable.getValue());
         }
@@ -65,21 +64,16 @@ public class Program {
 
 
     public List<AssignStatement> findUnusedAssignments() {
-
         numberAllAssignments();
 
         UnusedAssignmentsAnalysis result = unusedAssignmentsInList(statements);
 
-
         ArrayList<AssignStatement> unusedAssignments = new ArrayList<>(result.unusedAssignments());
-
         Map<String, List<AssignStatement>> currentUnusedAssignments = result.currentUnusedAssignments();
-
 
         for (var varName : currentUnusedAssignments.keySet()) {
             unusedAssignments.addAll(currentUnusedAssignments.get(varName));
         }
-
         return unusedAssignments.stream().sorted(Comparator.comparingInt(AssignStatement::getIndex)).toList();
     }
 
@@ -91,7 +85,6 @@ public class Program {
         HashMap<String, List<AssignStatement>> currentUnusedAssignments = new HashMap<>();
         for (var statement : statementList) {
             UnusedAssignmentsAnalysis result = statement.unusedAssignmentsAnalysis();
-
             for (var variable : result.usedVariables()) {
                 if (currentUnusedAssignments.containsKey(variable)) {
                     currentUnusedAssignments.remove(variable);
@@ -122,4 +115,16 @@ public class Program {
     }
 
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Program program = (Program) o;
+        return Objects.equals(statements, program.statements) && Objects.equals(variables, program.variables);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(statements, variables);
+    }
 }
