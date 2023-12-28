@@ -20,12 +20,12 @@ public class WhileStatement extends Statement {
 
     @Override
     public String info() {
-        String res =  "while: " + expression.info() + " then ";
-        StringBuilder r = new StringBuilder(res);
+        StringBuilder r = new StringBuilder("while: " + expression.info());
         for (var s : statementList) {
             r.append(s.info());
             r.append(" ");
         }
+        r.append("end");
         return r.toString();
     }
 

@@ -20,7 +20,7 @@ public class IfStatement extends Statement {
 
     @Override
     public String info() {
-        StringBuilder result = new StringBuilder("if: " + expression.info() + " then ");
+        StringBuilder result = new StringBuilder("if: " + expression.info());
         for (var s : statementList) {
             result.append(s.info());
             result.append(" ");
