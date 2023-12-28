@@ -1,0 +1,373 @@
+PARSER_BEGIN(Parser)
+package parser;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import parser.ParseException;
+import parser.syntaxtree.*;
+import parser.syntaxtree.statements.*;
+import parser.syntaxtree.expressions.*;
+import parser.syntaxtree.expressions.operators.*;
+
+public class Parser {
+    static Parser parser = null ;
+        public static Program parse(String file) throws FileNotFoundException, ParseException {
+            InputStream is = new java.io.FileInputStream(file);
+            Program program = new Program();
+
+            if (parser == null) {
+                    parser = new Parser(is);
+            }
+            else {
+                ReInit(is);
+            }
+            parser.Start(program);
+            return program;
+        }
+
+
+}
+
+PARSER_END(Parser)
+
+
+SKIP: {
+  " "
+| "\t"
+| "\n"
+}
+
+
+TOKEN : { < OPEN_BRACKET : "(" > }
+TOKEN : { < CLOSE_BRACKET : ")" > }
+
+TOKEN: {
+  <CONSTANT: (["0"-"9"])+>
+}
+
+TOKEN: {
+  <VARIABLE: ["a"-"z"]>
+}
+
+TOKEN : {
+  <PLUS: "+">
+}
+
+TOKEN : {
+  <MINUS: "-">
+}
+
+TOKEN : {
+  <MULTIPLY: "*">
+}
+
+TOKEN : {
+  <DIVIDE: "/">
+}
+
+TOKEN : {
+  <LESS_THAN: "<">
+}
+
+TOKEN : {
+  <MORE_THAN: ">">
+}
+TOKEN : {
+  <EQUAL: "=">
+}
+
+TOKEN : {
+  <WHILE: "while">
+}
+
+TOKEN : {
+  <IF: "if">
+}
+
+TOKEN : {
+  <END: "end">
+}
+
+
+TOKEN : {
+    <OPERATOR: <PLUS> | <MINUS> | <DIVIDE> | <MULTIPLY>>
+}
+
+void Start(Program program): {}
+{
+    Program(program)
+}
+
+
+void Program(Program program):
+{
+   List<Statement> statementList;
+}
+{
+    statementList = StatementList()
+    {
+        program.setStatementList(statementList);
+    }
+}
+
+
+List<Statement> StatementList():
+{
+   ArrayList<Statement> statementList = new ArrayList<Statement>();
+   List<Statement> statementSubList;
+   Statement statement;
+}
+{
+    statement = Statement()
+    {
+        statementList.add(statement);
+    }
+
+    statementSubList = StatementList1()
+    {
+        statementList.addAll(statementSubList);
+        return statementList;
+    }
+}
+
+
+List<Statement> StatementList1():
+{
+    List<Statement> statementList = new ArrayList<Statement>();
+    List<Statement> statementSubList;
+    Statement statement;
+ }
+{
+
+    statement = Statement()
+    statementSubList = StatementList1()
+    {
+        statementList.add(statement);
+        statementList.addAll(statementSubList);
+        return statementList;
+    }
+    |
+    {
+        return statementList;
+    }
+}
+
+
+
+
+
+Statement Statement():
+{
+     Token variable;
+     Expression expression;
+     Statement statement;
+     List<Statement> statementList;
+}
+{
+    (
+        variable = <VARIABLE>
+        <EQUAL>
+        expression = ExpressionWithComparing()
+        {
+            return new AssignStatement(variable.image, expression);
+        }
+    )
+    |
+    (
+        <WHILE>
+        expression = ExpressionWithComparing()
+        statementList = StatementList()
+        <END>
+       {
+            return new WhileStatement(expression, statementList);
+        }
+    )
+    |
+    (
+        <IF>
+        expression = ExpressionWithComparing()
+        statementList = StatementList()
+        <END>
+        {
+            return new IfStatement(expression, statementList);
+        }
+    )
+}
+
+
+Expression ExpressionWithComparing():
+{
+    Expression leftExpression;
+    Expression expression;
+}
+{
+    leftExpression = Expression()
+    expression = ExpressionWithComparing1(leftExpression)
+    {
+        return expression;
+    }
+
+}
+
+Expression ExpressionWithComparing1(Expression leftExpression):
+{
+    Expression rightExpression;
+    Expression expression;
+}
+{
+    (
+        <LESS_THAN>
+        rightExpression = Expression()
+        expression = ExpressionWithComparing1(new LessOperatorExpression(leftExpression, rightExpression))
+        {
+            return expression;
+        }
+    )
+    |
+    (
+        <MORE_THAN>
+        rightExpression = Expression()
+        expression = ExpressionWithComparing1(new MoreOperatorExpression(leftExpression, rightExpression))
+        {
+            return expression;
+        }
+    )
+    |
+    {
+        return leftExpression;
+    }
+}
+
+
+Expression Expression() throws NumberFormatException:
+{
+    Token t ;
+    int i ;
+    int value;
+    Expression expression;
+    Expression leftExpression;
+
+}
+{
+    leftExpression = Term()
+    expression = Expression1(leftExpression)
+    {
+        return expression;
+    }
+}
+
+
+
+
+Expression Expression1(Expression leftExpression):
+{
+    Expression expression;
+    Expression rightExpression;
+}
+{
+    (
+        <PLUS>
+        rightExpression = Term()
+        expression = Expression1(new PlusOperatorExpression(leftExpression, rightExpression))
+        {
+            return expression;
+        }
+    )
+    |
+    (
+        <MINUS>
+        rightExpression = Term()
+        expression = Expression1(new MinusOperatorExpression(leftExpression, rightExpression))
+        {
+            return expression;
+        }
+    )
+    |
+    {
+        return leftExpression;
+    }
+}
+
+
+Expression Term():
+{
+    Expression expression;
+    Expression leftExpression;
+}
+{
+    leftExpression = Factor()
+    expression = Term1(leftExpression)
+    {
+        return expression;
+    }
+
+}
+
+
+Expression Term1(Expression leftExpression):
+{
+    Expression expression;
+    Expression rightExpression;
+}
+{
+    (
+        <MULTIPLY>
+        rightExpression = Factor()
+        expression = Term1(new MultiplyOperatorExpression(leftExpression, rightExpression))
+        {
+            return expression;
+        }
+    )
+    |
+    (
+        <DIVIDE>
+        rightExpression = Factor()
+        expression = Term1(new DivideOperatorExpression(leftExpression, rightExpression))
+        {
+            return expression;
+        }
+    )
+    |
+    {
+        return leftExpression;
+    }
+}
+
+
+Expression Factor():
+{
+    Token t;
+    Expression expression;
+ }
+
+{
+    (
+        t = <CONSTANT>
+        {
+            return new ConstantExpression(Integer.parseInt(t.image));
+        }
+    )
+    |
+    (
+       t = <VARIABLE>
+       {
+           return new VariableExpression(t.image);
+       }
+    )
+    |
+    (
+        <OPEN_BRACKET>
+        expression = ExpressionWithComparing()
+        <CLOSE_BRACKET>
+        {
+            return expression;
+        }
+    )
+}
+
+
+
+
+
+
